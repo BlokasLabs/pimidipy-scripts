@@ -4,9 +4,14 @@ from functools import partial
 import utils
 from pimidipy import *
 pimidipy = PimidiPy()
+from os import getenv
 
-# Edit this array to change the chord.
-SEMITONES = [0, 4, 7]
+# Get the semitones from the environment variable or use the default value.
+semitones = getenv('SEMITONES', '0,4,7')
+SEMITONES = list(map(int, semitones.split(',')))
+
+# Eliminate duplicates, respecting the order.
+SEMITONES = list(dict.fromkeys(SEMITONES))
 
 port_in = utils.get_input_port(0)
 port_out = utils.get_output_port(0)
