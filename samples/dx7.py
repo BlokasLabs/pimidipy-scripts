@@ -98,7 +98,6 @@
 #              bit6 = 0 / bit 5: OP1 / ... / bit 0: OP6
 
 from collections import defaultdict
-import utils
 from pimidipy import *
 pimidipy = PimidiPy()
 
@@ -302,7 +301,7 @@ def build_parameter_change_event(device_id, parameter_id, value):
 	if parameter_id < 0 or parameter_id > len(DX7_PARAMETERS):
 		raise ValueError("Invalid parameter ID")
 	if value < DX7_PARAMETERS[parameter_id]["min"] or value > DX7_PARAMETERS[parameter_id]["max"]:
-		raise ValueError(f"Value '{value}' out of range for parameter '{DX7_PARAMETERS[parameter_id]["name"]}'")
+		raise ValueError(f"Value '{value}' out of range for parameter '{DX7_PARAMETERS[parameter_id]['name']}'")
 	return SysExEvent([ 0xf0, 0x43, 0x10 | device_id, (parameter_id & 0x80) >> 7, (parameter_id & 0x7f), value, 0xf7 ])
 
 def remap_cc_value(cc_value, min_value, max_value):
@@ -341,7 +340,7 @@ def switch_bank(bank_id):
 	if current_bank != bank_id:
 		current_bank = bank_id
 		print(" ")
-		print(f"Switched to bank {CONTROL_BANKS[current_bank]["name"]}, controls:")
+		print(f"Switched to bank {CONTROL_BANKS[current_bank]['name']}, controls:")
 		print("[{}]".format("Bank select".ljust(LONGEST_PARAMETER_NAME_LEN)), end=" ")
 		for i, param_id in enumerate(CONTROL_BANKS[current_bank]["parameters"]):
 			print("[{}]".format(DX7_PARAMETERS[param_id]["name"].ljust(LONGEST_PARAMETER_NAME_LEN)), end=" " if i % 7 != 2 else "\n")
@@ -349,7 +348,7 @@ def switch_bank(bank_id):
 			print()
 
 def set_parameter(device_id, param_id, value):
-	print(f"Setting {DX7_PARAMETERS[param_id]["name"]} to {value}")
+	print(f"Setting {DX7_PARAMETERS[param_id]['name']} to {value}")
 	output.write(build_parameter_change_event(device_id, param_id, value))
 
 def handle_cc(cc_channel, cc_id, cc_value):
@@ -372,14 +371,11 @@ def handle_cc(cc_channel, cc_id, cc_value):
 
 print("DX7 MIDI controller started")
 
-input_port_name = utils.get_input_port(0)
-output_port_name = utils.get_output_port(0)
+input = pimidipy.open_input(0)
+output = pimidipy.open_output(0)
 
-print("Using input port:", input_port_name)
-print("Using output port:", output_port_name)
-
-input = pimidipy.open_input(input_port_name)
-output = pimidipy.open_output(output_port_name)
+print("Using input port:", input.name)
+print("Using output port:", output.name)
 
 def process_midi_message(message):
 	if isinstance(message, ControlChangeEvent):

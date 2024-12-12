@@ -1,25 +1,20 @@
 #!/usr/bin/env python3
 
 from functools import partial
-import utils
 from pimidipy import *
 pimidipy = PimidiPy()
 from os import getenv
 
 # Get the semitones from the environment variable or use the default value.
-semitones = getenv('SEMITONES', '0,4,7')
-SEMITONES = list(map(int, semitones.split(',')))
+CHORD_SEMITONES = list(map(int, getenv('CHORD_SEMITONES', '0,4,7').split(',')))
 
 # Eliminate duplicates, respecting the order.
-SEMITONES = list(dict.fromkeys(SEMITONES))
+CHORD_SEMITONES = list(dict.fromkeys(CHORD_SEMITONES))
 
-port_in = utils.get_input_port(0)
-port_out = utils.get_output_port(0)
+input = pimidipy.open_input(0)
+output = pimidipy.open_output(0)
 
-print('Using input port {} and output port {}'.format(port_in, port_out))
-
-input = pimidipy.open_input(port_in)
-output = pimidipy.open_output(port_out)
+print('Using input port {} and output port {}'.format(input.name, output.name))
 
 def produce_chord(event, semitones: list[int]):
 	if type(event) == NoteOnEvent:
@@ -42,6 +37,6 @@ def produce_chord(event, semitones: list[int]):
 		print(f'Passing event {event}')
 		output.write(event)
 
-input.add_callback(partial(produce_chord, semitones=SEMITONES))
+input.add_callback(partial(produce_chord, semitones=CHORD_SEMITONES))
 
 pimidipy.run()

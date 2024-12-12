@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
 
-import utils
 from pimidipy import *
 pimidipy = PimidiPy()
 
-INPUT_PORT = utils.get_input_port(0)
 MAX_PORT = 8
 
-print('Using input port {}'.format(INPUT_PORT))
-input = pimidipy.open_input(INPUT_PORT)
+input = pimidipy.open_input(0)
+print('Using input port {}'.format(input.name))
 
 outputs = []
 for i in range(MAX_PORT):
-	port_out = utils.get_output_port(i)
+	port_out = pimidipy.get_output_port(i)
 	print('Using output port {}'.format(port_out))
 	outputs.append(pimidipy.open_output(port_out))
 
